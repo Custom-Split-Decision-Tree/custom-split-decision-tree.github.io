@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSDT</title>
+    <style>
+        /* General Page Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #333;
+            color: #fff;
+            scroll-behavior: smooth;
+        }
+
+        /* Navbar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background-color: #222;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        nav h2 {
+            color: #fff;
+            text-align: center;
+        }
+
+        nav img {
+            display: block;
+            margin: 0 auto 20px;
+            width: 120px; /* Adjusted for smaller logo */
+            height: auto;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 15px 0;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #fff;
+            padding: 10px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #555;
+            color: #ff5722;
+        }
+
+        /* Main Content */
+        .content {
+            margin-left: 270px;
+            padding: 20px;
+            padding-left: 2cm;
+            max-width: 800px;
+            word-wrap: break-word;
+        }
+
+        .banner {
+            width: 100%;
+            height: 5cm; /* Reduced height for banner */
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .banner img {
+            width: 5cm;
+            height: 5cm;
+        }
+
+        .section {
+            margin-bottom: 60px;
+            background-color: #444;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .section h1 {
+            font-size: 26px;
+            color: #ff5722;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ff5722;
+            padding-bottom: 5px;
+        }
+
+        .section p {
+            line-height: 1.8;
+            color: #ddd;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .section ul {
+            list-style: circle;
+            margin: 10px 0 10px 20px;
+        }
+
+        .code-block {
+            background-color: #222;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <img src="logo.jpg" alt="Navbar Logo">
+        <h2>CSDT</h2>
+        <ul>
+            <li><a href="#csdt">CSDT</a></li>
+            <li><a href="#installation">Installation Guide</a></li>
+            <li><a href="#user-guide">User Guide</a></li>
+            <li><a href="#examples">Example Notebooks</a></li>
+            <li><a href="#contribute">How to Contribute</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Banner Section -->
+        <div class="banner">
+            <img src="logo.jpg" alt="Main Content Logo">
+        </div>
+
+        <!-- CSDT Section -->
+        <div class="section" id="csdt">
+            <h1>CSDT</h1>
+            <p>
+                CSDT (Custom Split Decision Tree) is a new decision tree model that allows users to build a decision tree using their custom prediction and split methods. 
+                Unlike traditional decision trees, CSDT enables users to customize prediction and split functions based on their specific needs. 
+                With these custom inputs, CSDT makes machine learning models more flexible and tailored to individual requirements.
+            </p>
+            <p>
+                CSDT can be used in a variety of applications. It is especially effective in classification, regression, and optimization-based 
+                output-constrained Linear Programming (LP) problems. Its performance is comparable to Scikit-learn's standard decision tree implementation. 
+                For instance, when the prediction and split methods of <code>DecisionTreeRegressor</code> or <code>DecisionTreeClassifier</code> are integrated into 
+                CSDT with the same parameters, both models yield identical results.
+            </p>
+            <p>
+                Below is an example implementation of how to create and use a CSDT model:
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+from csdt import CSDT
+
+# Step 1: Import libraries and prepare data
+import pandas as pd
+from sklearn.datasets import make_regression
+
+X, y = make_regression(n_samples=100, n_features=5, noise=0.1, random_state=42)
+X_df = pd.DataFrame(X, columns=[f'Feature_{i}' for i in range(X.shape[1])])
+y_df = pd.DataFrame(y, columns=['Target'])
+
+# Step 2: Define custom split criteria
+def custom_split_criteria(y, X):
+    return y.mean(), ((y - y.mean())**2).sum()
+
+# Step 3: Initialize the CSDT model
+tree = CSDT(
+    max_depth=5,
+    min_samples_leaf=10,
+    min_samples_split=20,
+    split_criteria=custom_split_criteria,
+    random_state=42
+)
+
+# Step 4: Train the model
+tree.fit(X_df, y_df)
+
+# Step 5: Make predictions
+predictions = tree.predict(X_df)
+
+print("Predictions:")
+print(predictions)
+</code>
+</pre>
+            </div>
+        </div>
+
+        <!-- Placeholder Sections -->
+        <div class="section" id="installation">
+            <h1>Installation Guide</h1>
+            <p>Coming soon...</p>
+        </div>
+
+        <div class="section" id="user-guide">
+            <h1>User Guide</h1>
+            <p>Coming soon...</p>
+        </div>
+
+        <div class="section" id="examples">
+            <h1>Example Notebooks</h1>
+            <p>Coming soon...</p>
+        </div>
+
+        <div class="section" id="contribute">
+            <h1>How to Contribute</h1>
+            <p>Coming soon...</p>
+        </div>
+    </div>
+
+    <script>
+        // Smooth Scrolling for Navbar Links
+        document.querySelectorAll('nav ul li a').forEach((anchor) => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                window.scrollTo({
+                    top: targetSection.offsetTop - 20,
+                    behavior: 'smooth',
+                });
+            });
+        });
+    </script>
+</body>
+</html>

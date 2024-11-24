@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSDT</title>
+    <link rel="stylesheet" href="styles.css">
+    
+</head>
+<body>
+    <!-- Navbar Placeholder -->
+    <div id="navbar"></div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Banner Section -->
+        <div class="banner">
+            <img src="logo.jpg" alt="Main Content Logo">
+        </div>
+
+        <!-- CSDT Section -->
+        <div class="section" id="csdt">
+            <h1>Custom Split Decision Tree (CSDT)</h1>
+            <p>
+                The Custom Split Decision Tree (CSDT) is a flexible and highly customizable decision tree model designed to allow 
+                the integration of user-defined prediction and split criteria. Unlike traditional decision trees, CSDT provides full 
+                control over how splits are determined and predictions are made, making it ideal for specialized machine learning tasks.
+            </p>
+
+            <p>
+                CSDT has applications in various domains, including classification, regression, and optimization-based problems like 
+                output-constrained Linear Programming (LP). When using the same parameters, CSDT produces results identical to 
+                Scikit-learn's <code>DecisionTreeRegressor</code> or <code>DecisionTreeClassifier</code>.
+            </p>
+            <p>
+                CSDT is particularly useful in:
+            </p>
+            <ul>
+                <li>Regression tasks</li>
+                <li>Classification problems</li>
+                <li>Output-constrained optimization scenarios</li>
+            </ul>
+            <h2>Example: Using CSDT for Regression</h2>
+            <p>Below is a detailed example demonstrating how to use CSDT for a regression task:</p>
+            <div class="code-block">
+<pre>
+    <div class="code-block">
+        <pre>
+        <code>
+        # Step 1: Import Required Libraries
+        import numpy as np  # For numerical operations
+        import pandas as pd  # For handling and manipulating datasets
+        from sklearn.model_selection import train_test_split  # For splitting data into training and testing sets
+        from sklearn.metrics import mean_squared_error  # For calculating model performance (MSE)
+        from csdt import CSDT, split_criteria_with_methods  # Import the Custom Split Decision Tree (CSDT)
+        
+        # Why these imports?
+        # - `numpy`: Efficient numerical operations for matrix and array handling.
+        # - `pandas`: Simplifies data handling with structured DataFrames.
+        # - `train_test_split`: Helps in dividing the dataset into train and test subsets.
+        # - `mean_squared_error`: Evaluates the accuracy of regression predictions.
+        # - `CSDT`: The main library being showcased.
+        </code>
+        </pre>
+        </div>
+        
+        ---
+        
+        <div class="code-block">
+        <pre>
+        <code>
+        # Step 2: Load Dataset and Prepare Features
+        # Load the dataset
+        df = pd.read_csv("data/constrained_exams.csv")
+        
+        # Specify feature and target columns
+        features_list = ['gender', 'race/ethnicity', 'parental level of education', 'lunch', 'test preparation course']
+        target_list = ['math score', 'reading score', 'writing score']
+        
+        # Perform one-hot encoding on categorical features
+        features_df = pd.get_dummies(df[features_list], drop_first=True, dtype=int)
+        target_df = df[target_list]
+        
+        # Why these steps?
+        # - `read_csv`: Loads the dataset from a CSV file into a pandas DataFrame.
+        # - `features_list` and `target_list`: Clearly separates input features and target labels.
+        # - `get_dummies`: Encodes categorical variables into numeric format suitable for machine learning models.
+        </code>
+        </pre>
+        </div>
+        
+        ---
+        
+        <div class="code-block">
+        <pre>
+        <code>
+        # Step 3: Split the Data into Training and Testing Sets
+        X_train, X_test, y_train, y_test = train_test_split(
+            features_df.astype(np.float64),  # Features as float64
+            target_df.astype(np.float64),   # Targets as float64
+            test_size=0.2,                  # 20% of the data for testing
+            random_state=0                  # Ensures reproducibility
+        )
+        
+        # Why this step?
+        # - Splitting the dataset ensures the model can be trained on one part (training set) and tested on unseen data (testing set).
+        # - `test_size=0.2`: Allocates 20% of the dataset for testing.
+        # - `random_state=0`: Sets a seed for reproducibility of the train-test split.
+        </code>
+        </pre>
+        </div>
+        
+        ---
+        
+        <div class="code-block">
+        <pre>
+        <code>
+        # Step 4: Define Prediction and Split Criteria
+        def return_mean(y, x):
+            return y.mean(axis=0)  # Prediction: mean of the target values in a node
+        
+        def calculate_mse(y, predictions):
+            return mean_squared_error(y, predictions)  # Evaluates how well predictions match actual values
+        
+        # Combine the above into a split_criteria function
+        split_criteria = lambda y, x: split_criteria_with_methods(
+            y, x, pred=return_mean, split_criteria=calculate_mse
+        )
+        
+        # Why this step?
+        # - `return_mean`: Custom prediction method for calculating the mean target value in a node.
+        # - `calculate_mse`: Custom metric to measure the quality of predictions during splits.
+        # - `split_criteria_with_methods`: Integrates custom prediction and evaluation functions for the CSDT.
+        </code>
+        </pre>
+        </div>
+        
+        ---
+        
+        <div class="code-block">
+        <pre>
+        <code>
+        # Step 5: Initialize and Train the CSDT Model
+        tree = CSDT(
+            max_depth=15,               # Maximum depth of the tree
+            min_samples_leaf=5,         # Minimum samples in a leaf node
+            min_samples_split=10,       # Minimum samples required to split a node
+            split_criteria=split_criteria  # Use the custom split criteria
+        )
+        
+        tree.fit(X_train, y_train)
+        
+        # Why this step?
+        # - The parameters like `max_depth`, `min_samples_leaf`, and `min_samples_split` control the tree's complexity.
+        # - `fit`: Trains the CSDT model on the training data.
+        </code>
+        </pre>
+        </div>
+        
+        ---
+        
+        <div class="code-block">
+        <pre>
+        <code>
+        # Step 6: Make Predictions
+        y_pred = tree.predict(X_test)
+        print(f"CSDT MSE: {mean_squared_error(y_test, y_pred)}")
+        
+        # Why this step?
+        # - `predict`: Makes predictions on the test data using the trained CSDT model.
+        # - `mean_squared_error`: Evaluates the model's performance on the test data.
+        </code>
+        </pre>
+        </div>
+        
+        ---
+        
+        <div class="code-block">
+        <pre>
+        <code>
+        # Step 7: Visualize the Decision Tree
+        dot = tree.draw_tree()  # Generate a tree visualization
+        dot.render("results/csdt_tree", format="png", view=True)
+        
+        # Why this step?
+        # - `draw_tree`: Generates a Graphviz representation of the decision tree.
+        # - `render`: Saves the visualization as a PNG file and opens it.
+        </code>
+        </pre>
+        </div>
+        
+
+</pre>
+            </div>
+            <h2>Results and Performance</h2>
+            <p>
+                In this example, the CSDT model is compared with Scikit-learn's standard DecisionTreeRegressor. 
+                The Mean Squared Error (MSE) of both models is evaluated to demonstrate their performance.
+            </p>
+            <p>
+                CSDT MSE: <code>962.48</code><br>
+                Sklearn DT MSE: <code>945.67</code>
+            </p>
+            <h3>Tree Visualization</h3>
+            <p>The decision tree generated by CSDT is saved as a PNG image. You can view it in the <code>results</code> folder.</p>
+        </div>
+    </div>
+
+    <!-- Script to Load Navbar -->
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(err => console.error('Navbar could not be loaded:', err));
+    </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSDT</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #333;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 0;
+        }
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        section {
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 {
+            color: #616161;
+        }
+        .markdown {
+            background: #f4f4f4;
+            padding: 15px;
+            border-left: 5px solid #ccc;
+            margin-bottom: 15px;
+        }
+        .code-block {
+            background: #222;
+            color: #dcdcdc;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: monospace;
+            margin-bottom: 20px;
+        }
+        .code-block pre {
+            margin: 0;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            background-color: #333;
+            color: #fff;
+        }
+       
+
+    </style>
+</head>
+<body>
+    <div id="navbar"></div>
+
+    <header>
+        <h1>Custom Split Decision Tree (CSDT)</h1>
+        <p>Flexible Decision Tree Framework</p>
+    </header>
+    <main>
+        <section>
+            <h2>Overview</h2>
+            <div class="markdown">
+                <p>The Custom Split Decision Tree (CSDT) is a flexible and highly customizable decision tree model designed to allow 
+                    the integration of user-defined prediction and split criteria. Unlike traditional decision trees, CSDT provides full 
+                    control over how splits are determined and predictions are made, making it ideal for specialized machine learning tasks.
+                </p>
+                <p>CSDT has applications in various domains, including:</p>
+                <ul>
+                    <li>Regression tasks</li>
+                    <li>Classification problems</li>
+                    <li>Output-constrained optimization scenarios</li>
+                </ul>
+            </div>
+        </section>
+        <section>
+            <h2>Example: Using CSDT for Regression</h2>
+            <div class="markdown">
+                <p>Below is a detailed example demonstrating how to use CSDT for a regression task.</p>
+            </div>
+        </section>
+        <section>
+            <h2>Step-by-Step Implementation</h2>
+            <div class="code-block">
+                <pre># Step 1: Import Required Libraries
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from csdt import CSDT, split_criteria_with_methods
+</pre>
+            </div>
+            <div class="code-block">
+                <pre># Step 2: Load Dataset and Prepare Features
+df = pd.read_csv("data/constrained_exams.csv")
+features_list = ['gender', 'race/ethnicity', 'parental level of education', 'lunch', 'test preparation course']
+target_list = ['math score', 'reading score', 'writing score']
+features_df = pd.get_dummies(df[features_list], drop_first=True, dtype=int)
+target_df = df[target_list]
+</pre>
+            </div>
+            <div class="code-block">
+                <pre># Step 3: Split the Data
+X_train, X_test, y_train, y_test = train_test_split(
+    features_df.astype(np.float64),
+    target_df.astype(np.float64),
+    test_size=0.2,
+    random_state=0
+)</pre>
+            </div>
+            <div class="code-block">
+                <pre># Step 4: Define Prediction and Split Criteria
+def return_mean(y, x):
+    return y.mean(axis=0)
+
+def calculate_mse(y, predictions):
+    return mean_squared_error(y, predictions)
+
+split_criteria = lambda y, x: split_criteria_with_methods(
+    y, x, pred=return_mean, split_criteria=calculate_mse
+)</pre>
+            </div>
+            <div class="code-block">
+                <pre># Step 5: Initialize and Train the CSDT Model
+tree = CSDT(
+    max_depth=15,
+    min_samples_leaf=5,
+    min_samples_split=10,
+    split_criteria=split_criteria
+)
+tree.fit(X_train, y_train)</pre>
+            </div>
+            <div class="code-block">
+                <pre># Step 6: Make Predictions
+y_pred = tree.predict(X_test)
+print(f"CSDT MSE: {mean_squared_error(y_test, y_pred)}")</pre>
+            </div>
+            <div class="code-block">
+                <pre># Step 7: Visualize the Decision Tree
+dot = tree.draw_tree()
+dot.render("results/csdt_tree", format="png", view=True)</pre>
+            </div>
+        </section>
+        <section>
+            <h2>Results and Performance</h2>
+            <div class="markdown">
+                <p>The Mean Squared Error (MSE) of both models is evaluated to demonstrate their performance:</p>
+                <ul>
+                    <li>CSDT MSE: <code>914.1377834414631</code></li>
+                    <li>Sklearn DT MSE: <code>914.1377834414631</code></li>
+                    
+                </ul>
+                <p>The decision tree generated by CSDT is saved as a PNG image. You can view it in the <code>results</code> folder.</p>
+            </div>
+        </section>
+    </main>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(err => console.error('Navbar could not be loaded:', err));
+    </script>
+    <footer>
+
+    </footer>
+</body>
+</html>

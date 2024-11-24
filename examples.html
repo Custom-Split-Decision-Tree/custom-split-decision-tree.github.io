@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Notebooks</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navbar Placeholder -->
+    <div id="navbar"></div>
+
+    <!-- Page Content -->
+    <div class="content">
+        <h1>Example Notebooks</h1>
+        <p>Explore the example notebooks to understand the power of CSDT...</p>
+    </div>
+
+    <!-- Script to Load Navbar -->
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(err => console.error('Error loading navbar:', err));
+    </script>
+</body>
+</html>

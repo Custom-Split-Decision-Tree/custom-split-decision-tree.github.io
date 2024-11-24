@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Contribute - CSDT</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navbar Placeholder -->
+    <div id="navbar"></div>
+    <header>
+        <h1>How to Contribute</h1>
+        <p></p>
+    </header>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Banner Section -->
+        
+
+        <!-- How to Contribute Section -->
+        <div class="section" id="contribute">
+            <p>
+                Contributions to the Custom Split Decision Tree (CSDT) library are welcome! Whether you're fixing bugs, improving documentation, or 
+                adding new features, we appreciate your support and involvement in the project.
+            </p>
+
+            <h2>Steps to Contribute</h2>
+            <ol>
+                <li>
+                    <strong>Fork the Repository:</strong><br>
+                    Create a copy of the repository in your GitHub account by clicking the "Fork" button on the project page.
+                </li>
+                <li>
+                    <strong>Clone Your Fork:</strong><br>
+                    Clone the forked repository to your local machine using the following command:
+                    <div class="code-block">
+<pre>
+<code>
+git clone https://github.com/your-username/Custom-Split-Decision-Tree.git
+</code>
+</pre>
+                    </div>
+                </li>
+                <li>
+                    <strong>Create a New Branch:</strong><br>
+                    Create a new branch for your feature or bug fix:
+                    <div class="code-block">
+<pre>
+<code>
+git checkout -b feature-name
+</code>
+</pre>
+                    </div>
+                </li>
+                <li>
+                    <strong>Make Changes:</strong><br>
+                    Implement your changes. Make sure to follow the project's coding standards and guidelines.
+                </li>
+                <li>
+                    <strong>Commit Your Changes:</strong><br>
+                    Once your changes are ready, commit them with a descriptive message:
+                    <div class="code-block">
+<pre>
+<code>
+git add .
+git commit -m "Add a brief description of your changes"
+</code>
+</pre>
+                    </div>
+                </li>
+                <li>
+                    <strong>Push Your Changes:</strong><br>
+                    Push your changes to your forked repository:
+                    <div class="code-block">
+<pre>
+<code>
+git push origin feature-name
+</code>
+</pre>
+                    </div>
+                </li>
+                <li>
+                    <strong>Submit a Pull Request:</strong><br>
+                    Go to the original repository and submit a Pull Request (PR) from your forked branch. Provide a clear description of the changes 
+                    and the problem they solve.
+                </li>
+            </ol>
+
+            <h2>Code of Conduct</h2>
+            <p>
+                Please adhere to the project's <a href="CODE_OF_CONDUCT.md">Code of Conduct</a>. All contributors are expected to 
+                maintain a respectful and inclusive environment.
+            </p>
+
+            <h2>Resources</h2>
+            <ul>
+                <li><a href="https://docs.github.com/en/get-started/quickstart/contributing-to-projects">GitHub Contribution Guide</a></li>
+                <li><a href="https://github.com/cagla0117/Custom-Split-Decision-Tree/issues">Project Issues</a></li>
+                <li><a href="LICENSE">License</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Script to Load Navbar -->
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(err => console.error('Navbar could not be loaded:', err));
+    </script>
+</body>
+</html>

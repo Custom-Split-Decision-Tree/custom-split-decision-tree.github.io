@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation - CSDT</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navbar Placeholder -->
+    <div id="navbar"></div>
+<header>
+            <h1>Custom Split Decision Tree Installation</h1>
+            <p></p>
+        </header>
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Banner Section -->
+        
+        
+        <!-- Installation Section -->
+        <div class="section" id="installation">
+            <p>
+                Follow the instructions below to install the Custom Split Decision Tree (CSDT) library. 
+                Whether you're using pip or Conda, installation is straightforward and well-supported.
+            </p>
+
+            <h2>Option 1: Install via pip</h2>
+            <p>
+                You can install the library directly from PyPI using pip. Run the following command in your terminal:
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+pip install csdt
+</code>
+</pre>
+            </div>
+
+            <h2>Option 2: Clone and Install Locally</h2>
+            <p>
+                Alternatively, you can clone the repository from GitHub and install the library locally. 
+                Use the following commands:
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+git clone https://github.com/cagla0117/Custom-Split-Decision-Tree.git
+cd Custom-Split-Decision-Tree
+pip install -e .
+</code>
+</pre>
+            </div>
+
+            <h2>Requirements</h2>
+            <p>
+                The CSDT library requires the following dependencies. These will be automatically installed if you use pip:
+            </p>
+            <ul>
+                <li>matplotlib==3.8.1</li>
+                <li>numpy==1.26.0</li>
+                <li>pandas==2.1.3</li>
+                <li>scikit-learn==1.3.2</li>
+                <li>graphviz</li>
+            </ul>
+
+            <h2>Conda Environment Setup</h2>
+            <p>
+                If you prefer using Conda, you can set up an environment with all required dependencies using the provided `csdt.yml` file. 
+                Follow these steps:
+            </p>
+            <h3>Step 1: Download the `csdt.yml` file</h3>
+            <p>
+                Make sure the `csdt.yml` file is available in your working directory.
+            </p>
+            <h3>Step 2: Create the Environment</h3>
+            <p>Run the following command to create the environment:</p>
+            <div class="code-block">
+<pre>
+<code>
+conda env create -f csdt.yml
+</code>
+</pre>
+            </div>
+            <h3>Step 3: Activate the Environment</h3>
+            <p>Activate the newly created environment:</p>
+            <div class="code-block">
+<pre>
+<code>
+conda activate csdt
+</code>
+</pre>
+            </div>
+
+            <h2>License</h2>
+            <p>
+                This project is licensed under the MIT License. For more details, refer to the 
+                <a href="LICENSE">LICENSE</a> file.
+            </p>
+        </div>
+    </div>
+
+    <!-- Script to Load Navbar -->
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(err => console.error('Navbar could not be loaded:', err));
+    </script>
+</body>
+</html>

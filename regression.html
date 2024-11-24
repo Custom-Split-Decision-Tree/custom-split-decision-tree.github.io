@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiment Regressor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        section {
+            margin-bottom: 20px;
+        }
+
+        h1,
+        h2 {
+            color: #444;
+        }
+
+        .markdown {
+            background: #f4f4f4;
+            padding: 15px;
+            border-left: 5px solid #ccc;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: #222;
+            color: #dcdcdc;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: monospace;
+            margin-bottom: 20px;
+        }
+
+        .code-block pre {
+            margin: 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Experiment Regressor</h1>
+        <p>Comparing CSDT and Scikit-Learn Decision Tree Regressors</p>
+    </header>
+    <main>
+        <!-- Markdown -->
+        <section>
+            <h2>Introduction</h2>
+            <div class="markdown">
+                <p>Comparing CSDT and Scikit-Learn Decision Tree Regressors for Diabetes Dataset.</p>
+                <p>This notebook implements and compares:</p>
+                <ul>
+                    <li>A Custom Decision Tree Regressor (CSDT) that uses Mean Squared Error (MSE) for splitting.</li>
+                    <li>Scikit-Learn's DecisionTreeRegressor.</li>
+                </ul>
+                <p>The dataset used is the diabetes_dataset.csv containing features like age, sex, BMI, and target.</p>
+            </div>
+        </section>
+
+        <!-- Code Block -->
+        <section>
+            <h2>Import Libraries</h2>
+            <div class="code-block">
+                <pre>import numpy as np
+import pandas as pd
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from csdt import *  # Custom Decision Tree Regressor
+import matplotlib.pyplot as plt
+import os
+from sklearn.tree import plot_tree
+from IPython.display import display
+from IPython.display import Image</pre>
+            </div>
+        </section>
+        <!-- Markdown -->
+        <section>
+            <h2>2. Set Global Variables and Configuration</h2>
+            <div class="markdown">
+                <p>We define:</p>
+                <ul>
+                    <li><strong>Random Seed</strong>: Ensures reproducibility.</li>
+                    <li><strong>Hyperparameters</strong>:
+                        <ul>
+                            <li><code>min_samples_split</code>: Minimum samples needed to split a node.</li>
+                            <li><code>min_samples_leaf</code>: Minimum samples required at a leaf node.</li>
+                            <li><code>max_depth</code>: Maximum depth of the tree.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Features and Target</strong>: Define column names for inputs and outputs.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Code Block -->
+        <section>
+            <div class="code-block">
+<pre>SEED = 0
+    np.random.seed(SEED)
+    
+    ocdt_min_samples_split = 10
+    ocdt_min_samples_leaf = 5
+    ocdt_depth = 5
+    verbose = False
+    
+    base_folder = os.getcwd()
+    
+    features_list = ['age', 'sex', 'bmi', 'bp', 's1', 's2', 's3', 's4', 's5', 's6']
+    target_list = ['target']</pre>
+            </div>
+        </section>
+
+        <!-- Markdown -->
+        <section>
+            <h2>3. Load and Split Dataset</h2>
+            <div class="markdown">
+                <p>We load the diabetes dataset (<code>diabetes_dataset.csv</code>) and split it into:</p>
+                <ul>
+                    <li><strong>Training Set</strong>: 80% of the data for training.</li>
+                    <li><strong>Testing Set</strong>: 20% of the data for evaluation.</li>
+                </ul>
+                <p>The features are:</p>
+                <ul>
+                    <li>Age, sex, BMI, blood pressure (bp), and several blood test results (s1-s6).</li>
+                </ul>
+                <p>The target is:</p>
+                <ul>
+                    <li>A quantitative measure of disease progression after one year.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Code Block -->
+        <section>
+            <div class="code-block">
+<pre># Load dataset
+    df = pd.read_csv(os.path.join(base_folder, "data/diabetes_dataset.csv"))
+    
+    # Extract features and target
+    features_df = df[features_list]
+    target_df = df[target_list]
+    
+    # Split dataset
+    X_train, X_test, y_train, y_test = train_test_split(
+        features_df, target_df, test_size=0.2, random_state=SEED
+    )</pre>
+            </div>
+        </section>
+
+
+        <!-- Markdown -->
+        <section>
+            <h2>4. Define Utility Functions</h2>
+            <div class="markdown">
+                <h3>Return Mean</h3>
+                <ul>
+                    <li>Used to determine the value of leaf nodes in the custom regressor.</li>
+                </ul>
+                <h3>Calculate Mean Squared Error (MSE)</h3>
+                <ul>
+                    <li>Used as the splitting criterion in the custom regressor.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Code Block -->
+        <section>
+            <div class="code-block">
+<pre># Function to calculate mean value for leaf nodes
+def return_mean(y, x):
+    return y.mean(axis=0).astype(np.float64)
+
+# Function to calculate Mean Squared Error
+def calculate_mse(y, predictions):
+    mse = mean_squared_error(y, predictions)
+    return np.float64(mse)</pre>
+</div>
+        </section>
+
+
+        <!-- Markdown -->
+        <section>
+            <h2>5. Implement Custom Decision Tree Regressor (CSDT)</h2>
+            <div class="markdown">
+                <p>The custom decision tree uses:</p>
+                <ul>
+                    <li>Mean Squared Error (MSE) as the splitting criterion.</li>
+                    <li>Mean value of target variable for predictions at leaf nodes.</li>
+                </ul>
+            </div>
+        </section>
+        <!-- Code Block -->
+        <section>
+            <div class="code-block">
+<pre># Define split criteria using custom MSE and mean functions
+split_criteria = lambda y, x: split_criteria_with_methods(
+    y, x, pred=return_mean, split_criteria=calculate_mse
+)
+
+# Initialize the custom decision tree regressor
+tree = CSDT(
+    max_depth=ocdt_depth,
+    min_samples_leaf=ocdt_min_samples_leaf,
+    min_samples_split=ocdt_min_samples_split,
+    split_criteria=split_criteria,
+    verbose=verbose
+)
+
+# Train the CSDT regressor
+tree.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = tree.predict(X_test)</pre>
+            </div>
+        </section>
+
+
+        <!-- Markdown -->
+        <section>
+            <h2>6. Evaluate CSDT Regressor</h2>
+            <div class="markdown">
+                <p>We calculate the Mean Squared Error (MSE) for the predictions made by the custom regressor.</p>
+            </div>
+        </section>
+
+        <!-- Code Block -->
+        <section>
+            <div class="code-block">
+<pre># Calculate and display MSE for CSDT
+ocdt_mse = mean_squared_error(y_test, y_pred)
+print(f"CSDT MSE: {ocdt_mse}")</pre>
+</div>
+        </section>
+
+
+        <!-- Markdown -->
+        <section>
+            <h2>7. Implement and Evaluate Scikit-Learn Regressor</h2>
+            <div class="markdown">
+                <p>We use Scikit-Learn's <code>DecisionTreeRegressor</code>:</p>
+                <ul>
+                    <li>Same hyperparameters as CSDT for fair comparison.</li>
+                    <li>Evaluate using Mean Squared Error (MSE).</li>
+                </ul>
+            </div>
+        </section>
+        <!-- Code Block -->
+        <section>
+            <div class="code-block">
+<pre># Initialize Scikit-Learn decision tree regressor
+regressor = DecisionTreeRegressor(
+    random_state=20,
+    min_samples_leaf=ocdt_min_samples_leaf,
+    min_samples_split=ocdt_min_samples_split,
+    max_depth=ocdt_depth
+)
+
+# Train the Scikit-Learn regressor
+regressor.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred_sklearn = regressor.predict(X_test)
+
+# Calculate and display MSE for Scikit-Learn
+dt_mse = mean_squared_error(y_test, y_pred_sklearn)
+print(f"Scikit-Learn DT MSE: {dt_mse}")</pre>
+            </div>
+        </section>
+        <!-- Markdown -->
+        <section>
+            <h2>8. Visualize Decision Trees</h2>
+            <div class="markdown">
+                <p>We generate visualizations for:</p>
+                <ol>
+                    <li>The Custom Decision Tree Regressor (CSDT)</li>
+                    <li>The Scikit-Learn Decision Tree Regressor</li>
+                </ol>
+            </div>
+        </section>
+
+        <section>
+            <div class="code-block">
+<pre># Create output folder for results
+output_folder = "results"
+os.makedirs(output_folder, exist_ok=True)
+
+# Visualize and save the CSDT tree
+csdt_output_path = os.path.join(output_folder, 'diabetes_classifier')
+dot = tree.draw_tree()
+dot.render(csdt_output_path, format='png', view=True)
+display(Image(filename=f"{csdt_output_path}.png"))
+
+
+# Visualize and save the Scikit-Learn tree
+plt.figure(figsize=(15, 10))
+plot_tree(regressor, filled=True)
+sklearn_output_path = os.path.join(output_folder, 'diabetes_sklearn_dt.png')
+plt.savefig(sklearn_output_path, format='png', dpi=300, bbox_inches='tight')</pre>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Experiment Regressor Documentation</p>
+    </footer>
+</body>
+
+</html>

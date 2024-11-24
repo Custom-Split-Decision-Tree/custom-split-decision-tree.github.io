@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - CSDT</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navbar Placeholder -->
+    <div id="navbar"></div>
+    <header>
+        <h1>User Guide: Custom Split Decision Tree (CSDT)</h1>
+        <p></p>
+    </header>
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Banner Section -->
+        
+
+        <!-- User Guide Section -->
+        <div class="section" id="user-guide">
+            <p>
+                Welcome to the User Guide for the Custom Split Decision Tree (CSDT). This page provides a step-by-step explanation 
+                of how to use the CSDT model effectively. Each step includes code examples and detailed explanations to help you 
+                understand the workflow.
+            </p>
+
+            <h2>Step 1: Import Required Libraries</h2>
+            <p>
+                The first step is to import the necessary libraries. These libraries provide support for numerical computations, 
+                data manipulation, and machine learning tasks.
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+import numpy as np  # For numerical operations
+import pandas as pd  # For handling and manipulating datasets
+from sklearn.model_selection import train_test_split  # For splitting data into training and testing sets
+from sklearn.metrics import mean_squared_error  # For calculating model performance (MSE)
+from csdt import CSDT, split_criteria_with_methods  # Import the Custom Split Decision Tree (CSDT)
+</code>
+</pre>
+            </div>
+
+            <h2>Step 2: Load Dataset and Prepare Features</h2>
+            <p>
+                In this step, we load the dataset, specify the feature and target columns, and perform necessary preprocessing 
+                like one-hot encoding to convert categorical variables into numeric format.
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+# Load the dataset
+df = pd.read_csv("data/constrained_exams.csv")
+
+# Specify feature and target columns
+features_list = ['gender', 'race/ethnicity', 'parental level of education', 'lunch', 'test preparation course']
+target_list = ['math score', 'reading score', 'writing score']
+
+# Perform one-hot encoding on categorical features
+features_df = pd.get_dummies(df[features_list], drop_first=True, dtype=int)
+target_df = df[target_list]
+</code>
+</pre>
+            </div>
+
+            <h2>Step 3: Split the Data into Training and Testing Sets</h2>
+            <p>
+                The dataset is divided into training and testing subsets. The training set is used to train the model, and the 
+                testing set evaluates the model's performance on unseen data.
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+X_train, X_test, y_train, y_test = train_test_split(
+    features_df.astype(np.float64),  # Features as float64
+    target_df.astype(np.float64),   # Targets as float64
+    test_size=0.2,                  # 20% of the data for testing
+    random_state=0                  # Ensures reproducibility
+)
+</code>
+</pre>
+            </div>
+
+            <h2>Step 4: Define Prediction and Split Criteria</h2>
+            <p>
+                Custom prediction and split criteria functions are defined. These functions determine how predictions are made and 
+                how splits are evaluated in the decision tree.
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+def return_mean(y, x):
+    return y.mean(axis=0)  # Prediction: mean of the target values in a node
+
+def calculate_mse(y, predictions):
+    return mean_squared_error(y, predictions)  # Evaluates how well predictions match actual values
+
+# Combine the above into a split_criteria function
+split_criteria = lambda y, x: split_criteria_with_methods(
+    y, x, pred=return_mean, split_criteria=calculate_mse
+)
+</code>
+</pre>
+            </div>
+
+            <h2>Step 5: Initialize and Train the CSDT Model</h2>
+            <p>
+                The CSDT model is initialized with specified hyperparameters like maximum depth, minimum samples per leaf, and 
+                split criteria. The <code>fit</code> method is then used to train the model on the training data.
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+tree = CSDT(
+    max_depth=15,               # Maximum depth of the tree
+    min_samples_leaf=5,         # Minimum samples in a leaf node
+    min_samples_split=10,       # Minimum samples required to split a node
+    split_criteria=split_criteria  # Use the custom split criteria
+)
+
+tree.fit(X_train, y_train)
+</code>
+</pre>
+            </div>
+
+            <h2>Step 6: Make Predictions</h2>
+            <p>
+                After training, the model is used to make predictions on the test dataset. The performance of the model is evaluated 
+                using Mean Squared Error (MSE).
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+y_pred = tree.predict(X_test)
+print(f"CSDT MSE: {mean_squared_error(y_test, y_pred)}")
+</code>
+</pre>
+            </div>
+
+            <h2>Step 7: Visualize the Decision Tree</h2>
+            <p>
+                The trained decision tree is visualized using the Graphviz library. The visualization is saved as a PNG file in the 
+                <code>results</code> folder.
+            </p>
+            <div class="code-block">
+<pre>
+<code>
+dot = tree.draw_tree()  # Generate a tree visualization
+dot.render("results/csdt_tree", format="png", view=True)
+</code>
+</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script to Load Navbar -->
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(err => console.error('Navbar could not be loaded:', err));
+    </script>
+</body>
+</html>
