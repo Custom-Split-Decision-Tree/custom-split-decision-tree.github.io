@@ -70,6 +70,8 @@
 </head>
 
 <body>
+    <div id="navbar"></div>
+
     <header>
         <h1>Experiment Regressor</h1>
         <p>Comparing CSDT and Scikit-Learn Decision Tree Regressors</p>
@@ -333,6 +335,12 @@ plt.savefig(sklearn_output_path, format='png', dpi=300, bbox_inches='tight')</pr
         </section>
 
     </main>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(err => console.error('Navbar could not be loaded:', err));
+    </script>
 
     <footer>
         <p>&copy; 2024 Experiment Regressor Documentation</p>
