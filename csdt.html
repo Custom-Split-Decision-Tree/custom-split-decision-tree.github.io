@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSDT Detailed Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+        }
+        main {
+            max-width: 900px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        section {
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 {
+            color: #444;
+        }
+        ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        ul li {
+            margin-bottom: 10px;
+        }
+        .code-block {
+            background: #222;
+            color: #dcdcdc;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: monospace;
+        }
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Custom Split Decision Tree (CSDT)</h1>
+        <p>Detailed Report</p>
+    </header>
+    <main>
+        <section>
+            <h2>Introduction</h2>
+            <p>
+                The Custom Split Decision Tree (CSDT) is a flexible and customizable decision tree algorithm 
+                that allows users to define their own criteria for data splitting and prediction. Unlike 
+                traditional decision trees, CSDT gives users the ability to tailor these critical functionalities, 
+                enabling optimized solutions for a variety of problem types.
+            </p>
+        </section>
+        <section>
+            <h2>Advantages of CSDT</h2>
+            <ul>
+                <li><b>Flexibility:</b> Enables users to customize splitting and prediction functions.</li>
+                <li><b>Customization:</b> Adaptable to specific domain requirements.</li>
+                <li><b>Performance Optimization:</b> Achieves better splits and predictions tailored to the dataset.</li>
+                <li><b>Visualization:</b> Provides an intuitive way to visualize the decision tree, enhancing interpretability.</li>
+                <li><b>Support for Diverse Data:</b> Can handle multi-target problems efficiently.</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Components of CSDT</h2>
+            <h3>1. Node Class</h3>
+            <p>
+                A node is the fundamental unit of a decision tree. The tree structure is built upon these nodes.
+            </p>
+            <h4>Node Attributes:</h4>
+            <ul>
+                <li><b>right</b> and <b>left:</b> Right and left child nodes.</li>
+                <li><b>column</b> and <b>column_name:</b> The index and name of the feature used for splitting.</li>
+                <li><b>threshold:</b> The threshold value for splitting.</li>
+                <li><b>id:</b> A unique identifier for the node.</li>
+                <li><b>depth:</b> The depth of the node in the tree.</li>
+                <li><b>is_terminal:</b> Indicates whether the node is a terminal (leaf) node.</li>
+                <li><b>prediction:</b> Stores the prediction value if the node is terminal.</li>
+                <li><b>count:</b> The number of data points at the node.</li>
+                <li><b>split_details:</b> Additional details about the split.</li>
+                <li><b>class_counts:</b> Class counts at this node (used for classification tasks).</li>
+                <li><b>error:</b> The error value for the node.</li>
+                <li><b>best_score:</b> The best score achieved during the splitting process.</li>
+            </ul>
+            <h3>2. CSDT Class</h3>
+            <p>
+                The CSDT class manages the entire decision tree. It handles training, prediction, and visualization of the tree.
+            </p>
+            <h4>Attributes:</h4>
+            <ul>
+                <li><b>max_depth:</b> Maximum depth of the tree.</li>
+                <li><b>min_samples_leaf:</b> Minimum number of samples required in a leaf node.</li>
+                <li><b>min_samples_split:</b> Minimum number of samples required to split a node.</li>
+                <li><b>split_criteria:</b> User-defined function for evaluating split quality.</li>
+                <li><b>ccp_alpha:</b> Cost-complexity pruning parameter (currently not implemented).</li>
+                <li><b>max_features:</b> Maximum number of features considered for splitting.</li>
+                <li><b>random_state:</b> Seed value for reproducibility.</li>
+                <li><b>Tree:</b> Stores the root node of the tree.</li>
+            </ul>
+        </section>
+        <section>
+            <h3>3. User-Defined Split and Prediction Functions</h3>
+            <p>
+                The standout feature of CSDT is the ability for users to define custom split and prediction functions.
+            </p>
+            <div class="code-block">
+<pre>
+def calculate_mse(y, predictions):
+    return mean_squared_error(y, predictions)
+
+def return_mean(y, x):
+    return y.mean(axis=0)
+</pre>
+            </div>
+        </section>
+        <section>
+            <h2>CSDT in Practice</h2>
+            <div class="code-block">
+<pre>
+tree = CSDT(
+    max_depth=10,
+    min_samples_leaf=5,
+    min_samples_split=10,
+    split_criteria=lambda y, x: split_criteria_with_methods(y, x, pred=return_mean, split_criteria=calculate_mse)
+)
+tree.fit(features_df, labels_df)
+</pre>
+            </div>
+        </section>
+        <section>
+            <h2>Conclusion</h2>
+            <p>
+                CSDT stands apart from traditional decision trees by offering users full control over data splitting and prediction processes. 
+                This flexibility makes it a powerful tool for specialized tasks, such as multi-target regression, custom error metrics, and domain-specific applications. 
+                Beyond being a machine learning model, CSDT serves as a platform for developing custom solutions tailored to unique datasets and problem types.
+            </p>
+        </section>
+    </main>
+</body>
+</html>
