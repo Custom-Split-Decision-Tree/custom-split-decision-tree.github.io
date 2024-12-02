@@ -74,11 +74,10 @@
 
     <header>
         <h1>Experiment Output Constraint</h1>
-        <p></p>
+        <p>Using Gurobi with CSDT for Multi-Target Regression</p>
     </header>
 <main>
     <section>
-        <h2>Using Gurobi with CSDT for Multi-Target Regression</h2>
         <div class="markdown">
             <p>This notebook covers:</p>
             <ol>
@@ -125,7 +124,6 @@
         </div>
     </section>
     <section>
-        <h2>Import Necessary Libraries and Configure Gurobi</h2>
         <div class="code-block">
             <pre>
     import numpy as np
@@ -166,7 +164,6 @@
         </div>
     </section>
     <section>
-        <h2>Define Dataset and Problem Configuration</h2>
         <div class="code-block">
             <pre>
     # Define hyperparameters
@@ -215,7 +212,6 @@
         </div>
     </section>
     <section>
-        <h2>Formulate and Solve LP for Multi-Target Prediction</h2>
         <div class="code-block">
             <pre>
     def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=False):
@@ -270,7 +266,6 @@
         </div>
     </section>
     <section>
-        <h2>Implement CSDT with Gurobi</h2>
         <div class="code-block">
             <pre>
     def calculate_mse(y, predictions):
@@ -301,7 +296,6 @@
         </div>
     </section>
     <section>
-        <h2>Evaluate the Model</h2>
         <div class="code-block">
             <pre>
     ocdt_mse = mean_squared_error(y_test, y_pred)
@@ -316,7 +310,6 @@
         </div>
     </section>
     <section>
-        <h2>Visualize the Tree</h2>
         <div class="code-block">
             <pre>
     output_folder = "results"
