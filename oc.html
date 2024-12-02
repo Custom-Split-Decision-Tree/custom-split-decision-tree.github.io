@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiment Regressor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        section {
+            margin-bottom: 20px;
+        }
+
+        h1,
+        h2 {
+            color: #444;
+        }
+
+        .markdown {
+            background: #f4f4f4;
+            padding: 15px;
+            border-left: 5px solid #ccc;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: #222;
+            color: #dcdcdc;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: monospace;
+            margin-bottom: 20px;
+        }
+
+        .code-block pre {
+            margin: 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <header>
+        <h1>Experiment Output Constraint</h1>
+        <p></p>
+    </header>
+<main>
+    <section>
+        <h2>Using Gurobi with CSDT for Multi-Target Regression</h2>
+        <div class="markdown">
+            <p>This notebook covers:</p>
+            <ol>
+                <li>Setting up Gurobi for solving LP problems.</li>
+                <li>Implementing a custom decision tree regressor (CSDT) that uses Gurobi to solve sub-problems.</li>
+                <li>Training and evaluating the regressor on a multi-target regression dataset.</li>
+            </ol>
+            <h3>Dataset</h3>
+            <p>The dataset consists of:</p>
+            <ul>
+                <li><strong>Features</strong>: <code>['EnrolledElectiveBefore', 'GradeAvgPrevElec', 'Grade', 'Major', 'Class', 'GradePerm']</code></li>
+                <li><strong>Targets</strong>: Multi-target regression outputs <code>['Course1', ..., 'Course7']</code></li>
+            </ul>
+            <p>Gurobi is used to determine optimal predictions for each target within each decision tree node.</p>
+        </div>
+    </section>
+    <section>
+        <h2>1. Install and Configure Gurobi</h2>
+        <div class="markdown">
+            <h3>What is Gurobi?</h3>
+            <p>Gurobi is an optimization solver that supports linear programming (LP), mixed-integer programming (MIP), and more.</p>
+            <h3>Installation Steps</h3>
+            <ol>
+                <li><strong>Install Gurobi</strong>:
+                    <ul>
+                        <li>For Python: Run <code>pip install gurobipy</code>.</li>
+                        <li>Ensure you have a valid Gurobi license. You can obtain an academic license for free from <a href="https://www.gurobi.com/academia/academic-program-and-licenses/" target="_blank">Gurobi's website</a>.</li>
+                    </ul>
+                </li>
+                <li><strong>Set Up License</strong>:
+                    <ul>
+                        <li>Download the license file (<code>gurobi.lic</code>) and place it in your home directory or the default location suggested during installation.</li>
+                    </ul>
+                </li>
+                <li><strong>Verify Installation</strong>:
+                    <div class="code-block">
+                        <pre>
+    import gurobipy as gp
+    print(gp.gurobi.version())
+                        </pre>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </section>
+    <section>
+        <h2>Import Necessary Libraries and Configure Gurobi</h2>
+        <div class="code-block">
+            <pre>
+    import numpy as np
+    import pandas as pd
+    from sklearn.tree import DecisionTreeRegressor
+    from sklearn.metrics import mean_squared_error
+    from sklearn.model_selection import train_test_split
+    from gurobipy import Model
+    
+    import gurobipy as gp
+    from gurobipy import GRB
+    import os
+    import matplotlib.pyplot as plt
+    from sklearn.tree import plot_tree
+    from IPython.display import display
+    from IPython.display import Image
+    import sys
+    base_folder = os.getcwd()
+    sys.path.append(os.path.abspath(os.path.join(base_folder, "..")))
+    from csdt import CSDT, split_criteria_with_methods
+    
+    SEED = 0
+    np.random.seed(SEED)
+    
+    base_folder = os.getcwd()
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>2. Define Dataset and Problem Configuration</h2>
+        <div class="markdown">
+            <p>The dataset includes:</p>
+            <ul>
+                <li><strong>Features</strong>: Six features related to academic performance.</li>
+                <li><strong>Targets</strong>: Seven regression outputs corresponding to course grades.</li>
+            </ul>
+            <p>We also set the hyperparameters for the decision tree and optimization model.</p>
+        </div>
+    </section>
+    <section>
+        <h2>Define Dataset and Problem Configuration</h2>
+        <div class="code-block">
+            <pre>
+    # Define hyperparameters
+    ocdt_min_samples_split = 10
+    ocdt_min_samples_leaf = 5
+    ocdt_depth = 5
+    verbose = False
+    class_target_size = 7
+    
+    # Define features and targets
+    features_list = ['EnrolledElectiveBefore', 'GradeAvgPrevElec', 'Grade', 'Major', 'Class', 'GradePerm']
+    target_list = [f'Course{id + 1}' for id in range(class_target_size)]
+    
+    # Load dataset
+    df = pd.read_csv('../data/class_df_size_500_targets_7.csv')
+    features_df = df[features_list]
+    target_df = df[target_list]
+    
+    # Split dataset
+    X_train, X_test, y_train, y_test = train_test_split(features_df, target_df, test_size=0.2, random_state=SEED)
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>3. Gurobi Optimization for Multi-Target Prediction</h2>
+        <div class="markdown">
+            <h3>Linear Programming (LP) Model</h3>
+            <p>The goal is to minimize the sum of squared errors (SSE) while ensuring only one prediction is active per target.</p>
+            <h3>Constraints</h3>
+            <ol>
+                <li><strong>Sum of Binary Variables</strong>: Only one prediction is allowed at a time (<code>∑z_j ≤ 1</code>).</li>
+                <li><strong>Prediction-Binary Relationship</strong>: Each prediction is bound to its binary variable (<code>y_j ≤ M · z_j</code>).</li>
+            </ol>
+            <h3>Objective Function</h3>
+            <p>The objective is to minimize:</p>
+            <pre>
+    SSE = ∑(i=1 to N) ∑(j=1 to T) (y_j - y_ij)^2
+            </pre>
+            <p>Here:</p>
+            <ul>
+                <li><code>N</code>: Number of data points in the node.</li>
+                <li><code>T</code>: Number of targets.</li>
+                <li><code>y_ij</code>: Actual value of the <code>j<sup>th</sup></code> target for the <code>i<sup>th</sup></code> data point.</li>
+                <li><code>y_j</code>: Predicted value for the <code>j<sup>th</sup></code> target.</li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <h2>Formulate and Solve LP for Multi-Target Prediction</h2>
+        <div class="code-block">
+            <pre>
+    def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=False):
+        num_instances = y.shape[0]
+        num_targets = y.shape[1]
+    
+        # Create model
+        model = gp.Model("Minimize SSE")
+    
+        model.setParam("LogToConsole", 0)      
+        model.setParam("OutputFlag", 0)      
+        model.setParam("MIPGap", 1e-4)       
+    
+        # Create decision variables
+        predictions = model.addVars(num_targets, lb=0, ub=100, name="y")
+        binary_vars = model.addVars(num_targets, vtype=GRB.BINARY, name="z")
+    
+        # Create objective function
+        sse = gp.quicksum(
+            (predictions[j] - y[i][j]) * (predictions[j] - y[i][j])
+            for i in range(num_instances) for j in range(num_targets)
+        )
+    
+        # Add constraints
+        model.addConstr(binary_vars.sum() <= 1, "one_prediction_constraint")
+        for i in range(num_targets):
+            model.addConstr(predictions[i] <= 110 * binary_vars[i], f"z_relationship_{i}")
+    
+        # Solve the problem
+        model.setObjective(sse, GRB.MINIMIZE)
+        model.optimize()
+    
+        if verbose:
+            print("Optimal Solution:")
+            for i in range(num_targets):
+                print(f"Target {i + 1}: Prediction = {predictions[i].X}, Indicator = {binary_vars[i].X}")
+            print("Objective (Sum of Squared Errors):", model.objVal)
+    
+        preds = np.array([predictions[i].X for i in range(num_targets)])
+        return preds
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>4. Implement CSDT with Gurobi</h2>
+        <div class="markdown">
+            <p>We define:</p>
+            <ul>
+                <li><strong>Prediction Method</strong>: Uses Gurobi to solve the LP problem.</li>
+                <li><strong>Splitting Criterion</strong>: Uses Mean Squared Error (MSE) to evaluate splits.</li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <h2>Implement CSDT with Gurobi</h2>
+        <div class="code-block">
+            <pre>
+    def calculate_mse(y, predictions):
+        return mean_squared_error(y, predictions)
+    
+    split_criteria = lambda y, x: split_criteria_with_methods(
+        y, x, pred=formulate_and_solve_lp_class_data, split_criteria=calculate_mse
+    )
+    verbose = False
+    tree = CSDT(
+        max_depth=ocdt_depth,
+        min_samples_leaf=ocdt_min_samples_leaf,
+        min_samples_split=ocdt_min_samples_split,
+        split_criteria=split_criteria,
+        verbose=verbose
+    )
+    
+    tree.fit(X_train, y_train)
+    
+    y_pred = tree.predict(X_test)
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>5. Evaluate the Model</h2>
+        <div class="markdown">
+            <p>We calculate and display the Mean Squared Error (MSE) for predictions made by the custom decision tree regressor.</p>
+        </div>
+    </section>
+    <section>
+        <h2>Evaluate the Model</h2>
+        <div class="code-block">
+            <pre>
+    ocdt_mse = mean_squared_error(y_test, y_pred)
+    print(f"CSDT MSE: {ocdt_mse}")
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>6. Visualize the Tree</h2>
+        <div class="markdown">
+            <p>The tree structure of the custom decision tree regressor is visualized and saved as an image.</p>
+        </div>
+    </section>
+    <section>
+        <h2>Visualize the Tree</h2>
+        <div class="code-block">
+            <pre>
+    output_folder = "results"
+    
+    os.makedirs(output_folder, exist_ok=True)
+    
+    csdt_output_path = os.path.join(output_folder, 'class_ocdt')
+    dot = tree.draw_tree()
+    dot.render(csdt_output_path, format='png', view=True)
+    display(Image(filename=f"{csdt_output_path}.png"))
+            </pre>
+        </div>
+    </section>
+                                                                                                                                                                
+
+    </main>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(err => console.error('Navbar could not be loaded:', err));
+    </script>
+
+    <footer>
+        <p>&copy; 2024 Custom Split Decision Tree</p>
+    </footer>
+</body>
+
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiment Regressor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        section {
+            margin-bottom: 20px;
+        }
+
+        h1,
+        h2 {
+            color: #444;
+        }
+
+        .markdown {
+            background: #f4f4f4;
+            padding: 15px;
+            border-left: 5px solid #ccc;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: #222;
+            color: #dcdcdc;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: monospace;
+            margin-bottom: 20px;
+        }
+
+        .code-block pre {
+            margin: 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            background-color: #333;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="navbar"></div>
+
+    <header>
+        <h1>Experiment Classifier</h1>
+        <p>Comparing CSDT and Scikit-Learn Decision Tree Classifiers</p>
+    </header>
+<main>
+    <section>
+        <h2>1. Import Necessary Libraries</h2>
+        <div class="markdown">
+            <p>Here, we import libraries for:</p>
+            <ul>
+                <li>Data manipulation (<code>numpy</code>, <code>pandas</code>)</li>
+                <li>Machine learning (<code>DecisionTreeClassifier</code>, <code>csdt</code>)</li>
+                <li>Visualization (<code>matplotlib</code>)</li>
+                <li>Metrics for evaluation (<code>mean_squared_error</code>)</li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <div class="code-block">
+            <pre>
+    import numpy as np
+    import pandas as pd
+    from sklearn.tree import DecisionTreeClassifier, plot_tree
+    from sklearn.model_selection import train_test_split
+    import matplotlib.pyplot as plt
+    import os
+    from graphviz import Source
+    from IPython.display import display
+    from IPython.display import Image
+    from sklearn.model_selection import train_test_split
+    import sys
+    base_folder = os.getcwd()
+    sys.path.append(os.path.abspath(os.path.join(base_folder, "..")))
+    
+    from csdt import CSDT, split_criteria_with_methods
+    import numpy as np
+    print(np.__version__)
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>2. Set Global Variables and Configuration</h2>
+        <div class="markdown">
+            <p>This section defines:</p>
+            <ul>
+                <li><strong>Random seed</strong> for reproducibility</li>
+                <li><strong>Hyperparameters for decision trees:</strong>
+                    <ul>
+                        <li>Minimum samples required to split a node or create a leaf</li>
+                        <li>Maximum depth of the tree</li>
+                    </ul>
+                </li>
+                <li>Names for features and the target column</li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <div class="code-block">
+            <pre>
+    SEED = 0
+    np.random.seed(SEED)
+    
+    csdt_min_samples_split = 10
+    csdt_min_samples_leaf = 5
+    csdt_depth = 3
+    number_of_folds = 5
+    verbose = False
+    
+    base_folder = os.getcwd()
+    features_list = [f'f{i}' for i in range(32)]  # Features are named f0, f1, ..., f31
+    target_list = ['target']
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>3. Load Dataset</h2>
+        <div class="markdown">
+            <p>We load the dataset into a Pandas DataFrame and split it into training and testing sets:</p>
+            <ul>
+                <li><strong>Features</strong>: Columns named <code>f0</code>, <code>f1</code>, ..., <code>f31</code></li>
+                <li><strong>Target</strong>: A column named <code>target</code></li>
+                <li><strong>Split</strong>: 80% training, 20% testing</li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <div class="code-block">
+            <pre>
+    df = pd.read_csv(os.path.join(base_folder, "../data/student.csv"))
+    
+    # Extract features and target columns
+    features_df = df[features_list]
+    target_df = df[target_list]
+    
+    # Split into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(
+        features_df, target_df, test_size=0.2, random_state=SEED
+    )
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>4. Define Utility Functions</h2>
+        <div class="markdown">
+            <h3>Gini Index Calculation</h3>
+            <ul>
+                <li>Measures the impurity of a node.</li>
+                <li>Formula: <code>Gini = 1 - ∑(p_i²)</code>, where <code>p_i</code> is the probability of class <code>i</code>.</li>
+            </ul>
+            <h3>Majority Class Selection</h3>
+            <ul>
+                <li>Returns the most frequent class in the dataset.</li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <div class="code-block">
+            <pre>
+    def calculate_gini(prediction, y):
+        if y.size == 0 or np.unique(y).size == 1:  # Edge case: empty or pure dataset
+            return 0
+        classes, counts = np.unique(y, return_counts=True)
+        probabilities = counts / counts.sum()
+        return 1 - np.sum(probabilities ** 2)  # Gini calculation
+    
+    def return_majority(y, x):
+        if y.size == 0:  # Handle empty dataset
+            raise ValueError("Cannot compute majority class for an empty dataset.")
+        return [np.bincount(np.ravel(y).astype(np.int64)).argmax()]  # Most frequent class
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>5. Implement CSDT Model</h2>
+        <div class="markdown">
+            <p>Here, we:</p>
+            <ul>
+                <li>Configure the custom decision tree using hyperparameters and utility functions.</li>
+                <li>Train the tree on the training set.</li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <div class="code-block">
+            <pre>
+    split_criteria = lambda y, x: split_criteria_with_methods(
+        y, x, pred=return_majority, split_criteria=calculate_gini
+    )
+    
+    tree = CSDT(
+        max_depth=csdt_depth,
+        min_samples_leaf=csdt_min_samples_leaf,
+        min_samples_split=csdt_min_samples_split,
+        split_criteria=split_criteria,
+        verbose=verbose,
+    )
+    
+    tree.fit(X_train, y_train)
+    y_pred = tree.predict(X_test)
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>6. Evaluate CSDT</h2>
+        <div class="markdown">
+            <p>We calculate the Gini index for predictions made by the custom decision tree.</p>
+        </div>
+    </section>
+    <section>
+        <div class="code-block">
+            <pre>
+    ocdt_gini = calculate_gini(y_test, y_pred)
+    print(f"CSDT Gini: {ocdt_gini}")
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>7. Implement and Evaluate Scikit-Learn Decision Tree</h2>
+        <div class="markdown">
+            <p>We use Scikit-Learn's <code>DecisionTreeClassifier</code> to:</p>
+            <ul>
+                <li>Train a decision tree with the same hyperparameters as the CSDT.</li>
+                <li>Evaluate it using the Gini index.</li>
+            </ul>
+        </div>
+    </section>
+    <section>
+        <div class="code-block">
+            <pre>
+    # Initialize the Scikit-Learn Decision Tree Classifier
+    classifier = DecisionTreeClassifier(
+        min_samples_leaf=csdt_min_samples_leaf,
+        min_samples_split=csdt_min_samples_split,
+        max_depth=csdt_depth,
+        random_state=10,
+    )
+    
+    # Train the model
+    classifier.fit(X_train, y_train)
+    
+    # Predict and evaluate
+    y_pred_sklearn = classifier.predict(X_test)
+    dt_gini = calculate_gini(y_test, y_pred_sklearn)
+    print(f"Scikit-Learn DT Gini: {dt_gini}")
+            </pre>
+        </div>
+    </section>
+    <section>
+        <h2>8. Visualize Decision Trees</h2>
+        <div class="markdown">
+            <p>We generate visualizations for both:</p>
+            <ol>
+                <li>The custom decision tree (CSDT)</li>
+                <li>Scikit-Learn's decision tree</li>
+            </ol>
+        </div>
+    </section>
+    <section>
+        <div class="code-block">
+            <pre>
+    # Create output folder for saving visualizations
+    output_folder = "results"
+    os.makedirs(output_folder, exist_ok=True)
+    
+    # Save CSDT visualization
+    csdt_output_path = os.path.join(output_folder, 'csdt_classifier')
+    dot = tree.draw_tree()
+    dot.render(csdt_output_path, format='png', view=True)
+    display(Image(filename=f"{csdt_output_path}.png"))
+    
+    # Save Scikit-Learn tree visualization
+    plt.figure(figsize=(10, 10))
+    plot_tree(classifier, filled=True)
+    sklearn_output_path = os.path.join(output_folder, 'sklearn_classifier_dt.png')
+    plt.savefig(sklearn_output_path, format='png')
+            </pre>
+        </div>
+    </section>
+                                                                                                                            
+
+    </main>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data)
+            .catch(err => console.error('Navbar could not be loaded:', err));
+    </script>
+
+    <footer>
+        <p>&copy; 2024 Custom Split Decision Tree</p>
+    </footer>
+</body>
+
+</html>
