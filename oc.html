@@ -214,44 +214,52 @@
     <section>
         <div class="code-block">
             <pre>
-    def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=False):
-        num_instances = y.shape[0]
-        num_targets = y.shape[1]
-    
-        # Create model
-        model = gp.Model("Minimize SSE")
-    
-        model.setParam("LogToConsole", 0)      
-        model.setParam("OutputFlag", 0)      
-        model.setParam("MIPGap", 1e-4)       
-    
-        # Create decision variables
-        predictions = model.addVars(num_targets, lb=0, ub=100, name="y")
-        binary_vars = model.addVars(num_targets, vtype=GRB.BINARY, name="z")
-    
-        # Create objective function
-        sse = gp.quicksum(
-            (predictions[j] - y[i][j]) * (predictions[j] - y[i][j])
-            for i in range(num_instances) for j in range(num_targets)
-        )
-    
-        # Add constraints
-        model.addConstr(binary_vars.sum() <= 1, "one_prediction_constraint")
-        for i in range(num_targets):
-            model.addConstr(predictions[i] <= 110 * binary_vars[i], f"z_relationship_{i}")
-    
-        # Solve the problem
-        model.setObjective(sse, GRB.MINIMIZE)
-        model.optimize()
-    
-        if verbose:
-            print("Optimal Solution:")
-            for i in range(num_targets):
-                print(f"Target {i + 1}: Prediction = {predictions[i].X}, Indicator = {binary_vars[i].X}")
-            print("Objective (Sum of Squared Errors):", model.objVal)
-    
-        preds = np.array([predictions[i].X for i in range(num_targets)])
-        return preds
+                initial_solution = np.zeros(target_df.shape[1])
+
+                def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=False,initial_solution=initial_solution):
+                    num_instances = y.shape[0]
+                    num_targets = y.shape[1]
+                
+                    # Create model
+                    model = gp.Model("Minimize SSE")
+                
+                    # Set Gurobi parameters (disable console logging globally for this model)
+                    model.setParam("LogToConsole", 0)      # Disable general logging
+                    model.setParam("OutputFlag", 0)       # Disable detailed output
+                    model.setParam("MIPGap", 1e-4)        # Optional: set tighter convergence tolerance
+                
+                    # Create decision variables
+                    predictions = model.addVars(num_targets, lb=0, ub=100, name="y")
+                    binary_vars = model.addVars(num_targets, vtype=GRB.BINARY, name="z")
+                
+                    # Create objective function
+                    sse = gp.quicksum(
+                        (predictions[j] - y[i][j]) * (predictions[j] - y[i][j])
+                        for i in range(num_instances) for j in range(num_targets)
+                    )
+                
+                    # Add constraints
+                    model.addConstr(binary_vars.sum() <= 1, "one_prediction_constraint")
+                    for i in range(num_targets):
+                        model.addConstr(predictions[i] <= 110 * binary_vars[i], f"z_relationship_{i}")
+                
+                    # Solve the problem
+                    model.setObjective(sse, GRB.MINIMIZE)
+                    if sum(initial_solution) > 0:
+                        model.update()
+                        for idx, v in enumerate([v for v in model.getVars() if v.VarName.startswith('y')]):
+                            v.Start = initial_solution[idx]
+                
+                    model.optimize()
+                
+                    if verbose:
+                        print("Optimal Solution:")
+                        for i in range(num_targets):
+                            print(f"Target {i + 1}: Prediction = {predictions[i].X}, Indicator = {binary_vars[i].X}")
+                        print("Objective (Sum of Squared Errors):", model.objVal)
+                
+                    preds = np.array([predictions[i].X for i in range(num_targets)])
+                    return preds
             </pre>
         </div>
     </section>
@@ -268,11 +276,11 @@
     <section>
         <div class="code-block">
             <pre>
-    def calculate_mse(y, predictions):
+    def calculate_mse(y, predictions,initial_solution):
         return mean_squared_error(y, predictions)
     
-    split_criteria = lambda y, x: split_criteria_with_methods(
-        y, x, pred=formulate_and_solve_lp_class_data, split_criteria=calculate_mse
+    split_criteria = lambda y, x,initial_solution: split_criteria_with_methods(
+        y, x, pred=formulate_and_solve_lp_class_data, split_criteria=calculate_mse,initial_solution = initial_solution
     )
     verbose = False
     tree = CSDT(
@@ -280,7 +288,9 @@
         min_samples_leaf=ocdt_min_samples_leaf,
         min_samples_split=ocdt_min_samples_split,
         split_criteria=split_criteria,
-        verbose=verbose
+        verbose=verbose,
+        use_hashmaps = True,
+        use_initial_solution = True
     )
     
     tree.fit(X_train, y_train)
@@ -298,7 +308,7 @@
     <section>
         <div class="code-block">
             <pre>
-    ocdt_mse = mean_squared_error(y_test, y_pred)
+    ocdt_mse = mean_squared_error(y_test, y_pred,0)
     print(f"CSDT MSE: {ocdt_mse}")
             </pre>
         </div>

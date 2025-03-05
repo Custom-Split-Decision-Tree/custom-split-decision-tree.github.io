@@ -125,7 +125,7 @@
             </p>
             <div class="code-block">
 <pre>
-def calculate_mse(y, predictions):
+def calculate_mse(y, predictions,initial_solution):
     return mean_squared_error(y, predictions)
 
 def return_mean(y, x):
@@ -141,7 +141,9 @@ tree = CSDT(
     max_depth=10,
     min_samples_leaf=5,
     min_samples_split=10,
-    split_criteria=lambda y, x: split_criteria_with_methods(y, x, pred=return_mean, split_criteria=calculate_mse)
+    split_criteria=lambda y, x,initial_solution: split_criteria_with_methods(y, x, pred=return_mean, split_criteria=calculate_mse,initial_solution=initial_solution),
+    use_hashmaps = True,
+    use_initial_solution = True
 )
 tree.fit(features_df, labels_df)
 </pre>
