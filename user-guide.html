@@ -94,12 +94,12 @@ X_train, X_test, y_train, y_test = train_test_split(
 def return_mean(y, x):
     return y.mean(axis=0)  # Prediction: mean of the target values in a node
 
-def calculate_mse(y, predictions):
+def calculate_mse(y, predictions,initial_solution):
     return mean_squared_error(y, predictions)  # Evaluates how well predictions match actual values
 
 # Combine the above into a split_criteria function
-split_criteria = lambda y, x: split_criteria_with_methods(
-    y, x, pred=return_mean, split_criteria=calculate_mse
+split_criteria = lambda y, x,initial_solution: split_criteria_with_methods(
+    y, x, pred=return_mean, split_criteria=calculate_mse,initial_solution=initial_solution
 )
 </code>
 </pre>
@@ -117,7 +117,9 @@ tree = CSDT(
     max_depth=15,               # Maximum depth of the tree
     min_samples_leaf=5,         # Minimum samples in a leaf node
     min_samples_split=10,       # Minimum samples required to split a node
-    split_criteria=split_criteria  # Use the custom split criteria
+    split_criteria=split_criteria,  # Use the custom split criteria
+    use_hashmaps = True,
+    use_initial_solution= False
 )
 
 tree.fit(X_train, y_train)

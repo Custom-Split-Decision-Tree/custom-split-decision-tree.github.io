@@ -206,7 +206,7 @@ def return_mean(y, x):
     return y.mean(axis=0).astype(np.float64)
 
 # Function to calculate Mean Squared Error
-def calculate_mse(y, predictions):
+def calculate_mse(y, predictions,initial_solution):
     mse = mean_squared_error(y, predictions)
     return np.float64(mse)</pre>
 </div>
@@ -228,8 +228,8 @@ def calculate_mse(y, predictions):
         <section>
             <div class="code-block">
 <pre># Define split criteria using custom MSE and mean functions
-split_criteria = lambda y, x: split_criteria_with_methods(
-    y, x, pred=return_mean, split_criteria=calculate_mse
+split_criteria = lambda y, x,initial_solution: split_criteria_with_methods(
+    y, x, pred=return_mean, split_criteria=calculate_mse, initial_solution = initial_solution
 )
 
 # Initialize the custom decision tree regressor
@@ -238,7 +238,9 @@ tree = CSDT(
     min_samples_leaf=ocdt_min_samples_leaf,
     min_samples_split=ocdt_min_samples_split,
     split_criteria=split_criteria,
-    verbose=verbose
+    verbose=verbose,
+    use_initial_solution = True,
+    use_hashmaps = True
 )
 
 # Train the CSDT regressor

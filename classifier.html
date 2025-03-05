@@ -190,7 +190,7 @@
     <section>
         <div class="code-block">
             <pre>
-    def calculate_gini(prediction, y):
+    def calculate_gini(prediction, y,initial_solution):
         if y.size == 0 or np.unique(y).size == 1:  # Edge case: empty or pure dataset
             return 0
         classes, counts = np.unique(y, return_counts=True)
@@ -217,8 +217,8 @@
     <section>
         <div class="code-block">
             <pre>
-    split_criteria = lambda y, x: split_criteria_with_methods(
-        y, x, pred=return_majority, split_criteria=calculate_gini
+    split_criteria = lambda y, x,initial_solution: split_criteria_with_methods(
+        y, x, pred=return_majority, split_criteria=calculate_gini,initial_solution=initial_solution
     )
     
     tree = CSDT(
@@ -227,6 +227,8 @@
         min_samples_split=csdt_min_samples_split,
         split_criteria=split_criteria,
         verbose=verbose,
+        use_hashmaps= True,
+        use_initial_solution= True
     )
     
     tree.fit(X_train, y_train)
@@ -243,7 +245,7 @@
     <section>
         <div class="code-block">
             <pre>
-    ocdt_gini = calculate_gini(y_test, y_pred)
+    ocdt_gini = calculate_gini(y_test, y_pred,0)
     print(f"CSDT Gini: {ocdt_gini}")
             </pre>
         </div>
@@ -274,7 +276,7 @@
     
     # Predict and evaluate
     y_pred_sklearn = classifier.predict(X_test)
-    dt_gini = calculate_gini(y_test, y_pred_sklearn)
+    dt_gini = calculate_gini(y_test, y_pred_sklearn,0)
     print(f"Scikit-Learn DT Gini: {dt_gini}")
             </pre>
         </div>

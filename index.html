@@ -121,10 +121,11 @@
                     <li><b>min_samples_leaf:</b> Minimum number of samples required in a leaf node.</li>
                     <li><b>min_samples_split:</b> Minimum number of samples required to split a node.</li>
                     <li><b>split_criteria:</b> User-defined function for evaluating split quality.</li>
-                    <li><b>ccp_alpha:</b> Cost-complexity pruning parameter (currently not implemented).</li>
                     <li><b>max_features:</b> Maximum number of features considered for splitting.</li>
                     <li><b>random_state:</b> Seed value for reproducibility.</li>
                     <li><b>Tree:</b> Stores the root node of the tree.</li>
+                    <li><b>use_hashmaps:</b> Whether to use hashmaps for faster computations and lookups.</li></li>
+                    <li><b>use_initial_solution:</b>Whether to start the tree building process with an initial heuristic solution. </li>
                 </ul>
             </section>
             <section>
@@ -134,7 +135,7 @@
                 </p>
                 <div class="code-block">
     <pre>
-    def calculate_mse(y, predictions):
+    def calculate_mse(y, predictions,initial_solution):
         return mean_squared_error(y, predictions)
     
     def return_mean(y, x):
@@ -150,7 +151,9 @@
         max_depth=10,
         min_samples_leaf=5,
         min_samples_split=10,
-        split_criteria=lambda y, x: split_criteria_with_methods(y, x, pred=return_mean, split_criteria=calculate_mse)
+        split_criteria=lambda y, x,initial_solution: split_criteria_with_methods(y, x, pred=return_mean, split_criteria=calculate_mse,initial_solution = initial_solution),
+        use_hashmaps = True,
+        use_initial_solution = False
     )
     tree.fit(features_df, labels_df)
     </pre>
