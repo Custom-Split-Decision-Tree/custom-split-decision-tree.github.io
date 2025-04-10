@@ -167,9 +167,9 @@
         <div class="code-block">
             <pre>
     # Define hyperparameters
-    ocdt_min_samples_split = 10
-    ocdt_min_samples_leaf = 5
-    ocdt_depth = 5
+    csdt_min_samples_split = 10
+    csdt_min_samples_leaf = 5
+    csdt_depth = 5
     verbose = False
     class_target_size = 7
     
@@ -284,9 +284,9 @@ def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=Fal
     )
     verbose = False
     tree = CSDT(
-        max_depth=ocdt_depth,
-        min_samples_leaf=ocdt_min_samples_leaf,
-        min_samples_split=ocdt_min_samples_split,
+        max_depth=csdt_depth,
+        min_samples_leaf=csdt_min_samples_leaf,
+        min_samples_split=csdt_min_samples_split,
         split_criteria=split_criteria,
         verbose=verbose,
         use_hashmaps = True,
@@ -308,8 +308,8 @@ def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=Fal
     <section>
         <div class="code-block">
             <pre>
-    ocdt_mse = mean_squared_error(y_test, y_pred,0)
-    print(f"CSDT MSE: {ocdt_mse}")
+    csdt_mse = mean_squared_error(y_test, y_pred,0)
+    print(f"CSDT MSE: {csdt_mse}")
             </pre>
         </div>
     </section>
@@ -326,7 +326,7 @@ def formulate_and_solve_lp_class_data(y, x, lagrangian_multiplier=0, verbose=Fal
     
     os.makedirs(output_folder, exist_ok=True)
     
-    csdt_output_path = os.path.join(output_folder, 'class_ocdt')
+    csdt_output_path = os.path.join(output_folder, 'class_csdt')
     dot = tree.draw_tree()
     dot.render(csdt_output_path, format='png', view=True)
     display(Image(filename=f"{csdt_output_path}.png"))
