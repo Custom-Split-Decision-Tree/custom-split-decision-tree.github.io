@@ -217,8 +217,8 @@
     <section>
         <div class="code-block">
             <pre>
-    split_criteria = lambda y, x,initial_solution: split_criteria_with_methods(
-        y, x, pred=return_majority, split_criteria=calculate_gini,initial_solution=initial_solution
+    split_criteria = lambda y, x,initial_solutions: split_criteria_with_methods(
+        y, x, pred=return_majority, split_criteria=calculate_gini,initial_solutions=initial_solutions
     )
     
     tree = CSDT(
