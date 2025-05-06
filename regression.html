@@ -228,8 +228,8 @@ def calculate_mse(y, predictions,initial_solution):
         <section>
             <div class="code-block">
 <pre># Define split criteria using custom MSE and mean functions
-split_criteria = lambda y, x,initial_solution: split_criteria_with_methods(
-    y, x, pred=return_mean, split_criteria=calculate_mse, initial_solution = initial_solution
+split_criteria = lambda y, x,initial_solutions: split_criteria_with_methods(
+    y, x, pred=return_mean, split_criteria=calculate_mse, initial_solutions = initial_solutions
 )
 
 # Initialize the custom decision tree regressor
